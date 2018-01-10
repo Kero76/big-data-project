@@ -2,8 +2,8 @@
 :email: nic.gille@gmail.com
 :description: Rapport a propos du système CouchDB
 :revdate: 10 janvier 2018
-:revnumber: 0.1
-:revremark: Inclusion de l'ensemble des sous parties.
+:revnumber: 0.2
+:revremark: Ajout de la partie annexes.
 :lang: fr
 
 = Rapport à propos du système NoSQL : CouchDB
@@ -27,3 +27,5 @@ include::concurrency_access.adoc[]
 include::system_architecture.adoc[]
 
 include::distribution_system.adoc[]
+
+include::annexes.adoc[]
