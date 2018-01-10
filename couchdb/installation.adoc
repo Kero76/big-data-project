@@ -2,8 +2,22 @@
 :email: nic.gille@gmail.com
 :description: Partie sur la procédure d'installation de CouchDB.
 :revdate: 10 janvier 2018
-:revnumber: 0.1
-:revremark: Création du fichier + Titre principale de la partie.
+:revnumber: 0.2
+:revremark: Ajout de la procédure d'installation de CouchDB.
 :lang: fr
 
 == Procédure d'installation
+Pour installer **CouchDB** sur la machine de testfootnote:[<<annexes.adoc##computer-configuration>>],
+il suffit d'effectuer les commandes suivante : `# dnf install couchdb`. +
+Une fois celle-ci faite, lancer la commande suivante : `# couchdb` pour lancer
+le système _CouchDB_, vous obtiendrez alors le message suivant :
+
+[source,shell]
+----------------------------------------------
+# couchdb
+Apache CouchDB 1.7.1 (LogLevel=info) is logging to /var/log/couchdb/couch.log.
+Apache CouchDB has started. Time to relax.
+----------------------------------------------
+
+Cela nous indique donc que le système à démarrer et que nous sommes désormais prêt
+à l'utiliser.
