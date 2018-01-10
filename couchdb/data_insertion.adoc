@@ -1,0 +1,9 @@
+:author: Nicolas GILLE
+:email: nic.gille@gmail.com
+:description: Partie sur les méthodes d'ajouts de données dans un système CouchDB.
+:revdate: 10 janvier 2018
+:revnumber: 0.1
+:revremark: Création du fichier + Titre principale de la partie.
+:lang: fr
+
+== Présentation des méthodes d'ajouts des données
