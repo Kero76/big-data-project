@@ -1,9 +1,98 @@
 :author: Nicolas GILLE
 :email: nic.gille@gmail.com
 :description: Partie sur les méthodes d'ajouts de données dans un système CouchDB.
-:revdate: 10 janvier 2018
-:revnumber: 0.1
+:revdate: 15 Février 2018
+:revnumber: 0.2
 :revremark: Création du fichier + Titre principale de la partie.
 :lang: fr
 
-== Présentation des méthodes d'ajouts des données
+== Présentation des méthodes d'interaction avec le système
+
+=== Fonctionnement de CouchDb
+
+**couchDb** fonctionne via une architecture REST. L'idée est ici de pouvoir requêter
+le système de base de donnée directement via des requêtes *HTTP*, qui seront
+interprétés par le système afin d'effectuer les actions voulues par l'utilisateur
+est retourner les jeux de données demandées. +
+Pour cela, nous allons définir ensemble, pour les différentes actions possible,
+l'URL qui sera utilisé pour affecté le système de base de données.
+De plus, nous allons définir la méthode de requêtage HTTP à utiliser pour que l'action
+soit prise en compte.
+Définissons rapidement les différentes méthodes de requêtes HTTP :
+* GET : Permet d'effectuer une demande avec un ensemble de jeux de données en
+retour.
+* POST :
+* PUT : Permet d'effectuer une modification du système de base de données, tels que
+par exemple la création d'une base de donnée.
+* DELETE :
+
+=== Création d'une base de données
+
+Afin de créer une base de données, il faut envoyer une requête PUT sur l'url suivante
+`http://127.0.0.1:5894/{databae_name}` avec *database_name* le nom de le base de données
+ que l'on souhaite créer.
+ Par exemple, la commande suivante crée une base de donneés du nom de *big_data*
+ et retourne le code HTTP correspond indiquant la réussite ou l'échec du processus.
+
+[source,shell]
+----------------------------------------------
+# curl -X PUT http://127.0.0.1:5984/big_data
+{"ok":true}
+----------------------------------------------
+
+Le code `{"ok":true}` indique que la base de données a été créée correctement.
+
+
+=== Listing de toutes les bases de données du système
+
+Maintenant que nous avons créée une base de données, nous souhaitons voir l'ensemble
+des bases de données déjà présente dans le système.
+Pour cela, nous allons requêter en GET l'URL du système avec comme suffixe
+*_all_dbs* qui nous permettra de voir l'ensemble des bases en système.
+
+[source,shell]
+---------------------------------------------
+$ curl -X GET http://127.0.0.1:5984/_all_dbs
+["_replicator","_users","big_data"]
+---------------------------------------------
+
+Nous remarquons qu'il existe déjà 2 base de données (_replicator et _users) ainsi
+que la nouvelle base de données créer précédement.
+
+=== Récupération des informations relatives à une base
+
+*CouchDB* propose de voir les informations relative a une base de données de la
+manière suivante : `$ http://127.0.0.1:5984/{database_name}`. +
+Les données récupérées indique entre autres le nom de la base, son nombre de
+documents, le nombre de documents supprimé, ...
+
+[source,shell]
+-----------------------------------------------
+$ curl -X GET http://127.0.0.1:5984/_replicator
+{
+  "db_name":"_replicator",
+  "doc_count":1,
+  "doc_del_count":0,
+  "update_seq":1,
+  "purge_seq":0,
+  "compact_running":false,
+  "disk_size":4194,
+  "data_size":2006,
+  "instance_start_time":"1518710799423032",
+  "disk_format_version":6,
+  "committed_update_seq":1
+}
+-----------------------------------------------
+
+
+:imagesdir: ./images/
+=== Utilisation de l'interface graphique
+
+**CouchDB** possède en interne un service web graphique permettant d'intéragir
+avec le système directement depuis un navigateur web quelconque.
+Pour cela, il vous suffit de taper `http://127.0.0.1:5984/_utils/` dans votre
+navigateur favori afin d'accéder à la partie graphique de *CoucheDB*.
+
+[#ui-couchdb]
+.Interface graphique de CouchDB
+image::couchdb_001.png[width="450", height="450", align="center"]
