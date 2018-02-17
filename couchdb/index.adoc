@@ -2,8 +2,8 @@
 :email: nic.gille@gmail.com
 :description: Rapport a propos du système CouchDB
 :revdate: 17 février 2018
-:revnumber: 0.3
-:revremark: Suppression et fusion de partie entre elle.
+:revnumber: 0.4
+:revremark: Ajout de l'introduction.
 :lang: fr
 
 // Table of Content settings.
@@ -15,6 +15,9 @@
 // Include all parts of report.
 toc::[]
 
+include::introduction.adoc[]
+
+<<<
 include::installation.adoc[]
 
 <<<

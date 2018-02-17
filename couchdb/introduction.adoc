@@ -1,0 +1,15 @@
+:author: Nicolas GILLE
+:email: nic.gille@gmail.com
+:description: Remerciements
+:revdate: 17 février 2018
+:revnumber: 0.1
+:revremark: Création du fichier
+:lang: fr
+
+
+[dedication]
+== Remerciements
+
+Nous tenions a remercier Mme. SOUALMIA pour avoir respectivement assurée
+les cours et les TP de Big Data et d'avoir répondu à toutes nos
+questions aux cours de l'année scolaires 2017 / 2018.
