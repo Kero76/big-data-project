@@ -7,8 +7,10 @@
 :lang: fr
 
 == Annexes
+
 [#computer-configuration]
 === Configuration de la machine de test
+
 Voici la configuration _hardware_ de la machine sur lequel sont effectués
 l'ensemble des tests :
 

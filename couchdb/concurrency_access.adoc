@@ -1,9 +1,0 @@
-:author: Nicolas GILLE
-:email: nic.gille@gmail.com
-:description: Partie sur le support de la concurrence d'accès aux données de CouchDB.
-:revdate: 10 janvier 2018
-:revnumber: 0.1
-:revremark: Création du fichier + Titre principale de la partie.
-:lang: fr
-
-== Support de la concurrence d'accès aux données

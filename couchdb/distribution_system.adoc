@@ -1,9 +1,0 @@
-:author: Nicolas GILLE
-:email: nic.gille@gmail.com
-:description: Partie sur la distribution du système de la base de données CouchDB.
-:revdate: 10 janvier 2018
-:revnumber: 0.1
-:revremark: Création du fichier + Titre principale de la partie.
-:lang: fr
-
-== Distribution du système d'une base de données CouchDB

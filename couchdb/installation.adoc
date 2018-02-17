@@ -7,6 +7,7 @@
 :lang: fr
 
 == Procédure d'installation
+
 Pour installer **CouchDB** sur la machine de testfootnote:[<<annexes.adoc##computer-configuration>>],
 il suffit d'effectuer les commandes suivante : `# dnf install couchdb`. +
 Une fois celle-ci faite, lancer la commande suivante : `# couchdb` pour lancer

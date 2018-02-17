@@ -1,31 +1,27 @@
 :author: Nicolas GILLE
 :email: nic.gille@gmail.com
 :description: Rapport a propos du système CouchDB
-:revdate: 10 janvier 2018
-:revnumber: 0.2
-:revremark: Ajout de la partie annexes.
+:revdate: 17 février 2018
+:revnumber: 0.3
+:revremark: Suppression et fusion de partie entre elle.
 :lang: fr
 
-= Rapport à propos du système NoSQL : CouchDB
-
+// Table of Content settings.
 :toc: auto
 :toc-title: Table des Matières
+
+= Rapport à propos du système NoSQL : CouchDB
 
 // Include all parts of report.
 toc::[]
 
 include::installation.adoc[]
 
-include::data_insertion.adoc[]
+<<<
+include::architecture.adoc[]
 
-include::search_languages.adoc[]
+<<<
+include::interaction.adoc[]
 
-include::internal_indexation.adoc[]
-
-include::concurrency_access.adoc[]
-
-include::system_architecture.adoc[]
-
-include::distribution_system.adoc[]
-
+<<<
 include::annexes.adoc[]
