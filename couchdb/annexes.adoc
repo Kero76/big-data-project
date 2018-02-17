@@ -23,8 +23,14 @@ l'ensemble des tests :
 * Carte Graphique : GeForce 630M 2GB dédiés.
 
 [appendix]
+=== Liens utiles
+
+* http://couchdb.apache.org/[CouchDB Apache], dernière consultation le 17 février 2018
+* http://guide.couchdb.org/index.html[Guide CouchDB], dernière consultation le 17 février 2018
+
+[appendix]
 === Auteurs
 
-* Arthur BREUNEVEL 
+* Arthur BREUNEVEL
 * Nicolas GILLE
 * Grégoire POMMIER
