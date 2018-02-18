@@ -1,8 +1,8 @@
-:author: Nicolas GILLE
+:author: Arthur BREUNEVAL, Nicolas GILLE et Grégoire POMMIER
 :email: nic.gille@gmail.com
 :description: Rapport a propos du système CouchDB
 :revdate: 17 février 2018
-:revnumber: 0.4
+:revnumber: 1.0
 :revremark: Ajout de l'introduction.
 :lang: fr
 

@@ -1,9 +1,9 @@
 :author: Nicolas GILLE
 :email: nic.gille@gmail.com
-:description: Partie sur les méthodes d'ajouts de données dans un système CouchDB.
-:revdate: 17 Février 2018
-:revnumber: 0.2
-:revremark: Complétion du fichier + renommage du fichier.
+:description: Présentation des méthodes d'interaction avec le système couchDB
+:revdate: 18 Février 2018
+:revnumber: 0.3
+:revremark: Finalisation du contenu du fichier.
 :lang: fr
 
 == Présentation des méthodes d'interaction avec le système
@@ -157,6 +157,164 @@ $ curl -X PUT http://127.0.0.1:5984/big_data/001
   "rev":"2-1c2fae390fa5475d9b809301bbf3f25e"
 }
 -----------------------------------------------
+
+=== Requête d'un ensemble de documents
+
+Nous nous baserons sur des documents stockant le prix d’articles
+de supermarché comme on en trouve dans divers magasins
+
+Voici les différents fichiers json qui seront utilisés pour la suite
+de la présentation du fonctionnement de CouchDB.
+
+.apple_file.json
+[source,javascript]
+----------------------------------------------
+{
+    "_id" : "bc2a41170621c326ec68382f846d5764",
+    "_rev" : "2612672603",
+    "item" : "apple",
+    "prices" : {
+        "Fresh Mart" : 1.59,
+        "Price Max" : 5.99,
+        "Apples Express" : 0.79
+    }
+}
+----------------------------------------------
+
+.citrus_file.json
+[source,javascript]
+----------------------------------------------
+{
+    "_id" : "bc2a41170621c326ec68382f846d5764",
+    "_rev" : "2612672603",
+    "item" : "orange",
+    "prices" : {
+        "Fresh Mart" : 1.99,
+        "Price Max" : 3.19,
+        "Citrus Circus" : 1.09
+    }
+}
+----------------------------------------------
+
+.banana_file.json
+[source,javascript]
+----------------------------------------------
+{
+    "_id" : "bc2a41170621c326ec68382f846d5764",
+    "_rev" : "2612672603",
+    "item" : "banana",
+    "prices" : {
+        "Fresh Mart" : 1.99,
+        "Price Max" : 0.79,
+        "Banana Montana" : 4.22
+    }
+}
+----------------------------------------------
+
+==== Utilisation de la fonction de MapReduce
+
+Voici un exemple de la fonction Map que l'on peut utiliser afin subdiviser
+les résultats des documents afin de les regrouper plus tard dans la fonction
+*Reduce*.
+
+.map.js
+[source,javascript]
+----------------------------------------------
+function(doc) {
+    var store, price, value;
+    if (doc.item && doc.prices) {
+        for (store in doc.prices) {
+            price = doc.prices[store];
+            value = [doc.item, store];
+            emit(price, value);
+        }
+    }
+}
+----------------------------------------------
+
+Ce script permet d'afficher la *Vue* finale de nos documents après requête.
+
+.view.js
+[source,javascript]
+----------------------------------------------
+function(doc) {
+    var store, price, key;
+    if (doc.item && doc.prices) {
+        for (store in doc.prices) {
+            price = doc.prices[store];
+            key = [doc.item, price];
+            emit(key, store);
+        }
+    }
+}
+----------------------------------------------
+
+==== Validation des documents
+
+Il est possible d'écrire des fonctions de validations des documents reçus
+afin d'avoir un contrôle absolu sur les données que l'on souhaite stocker. +
+En effet, il peut être intéressant de ne stockers des données que sous un certain
+format, ou d'ajouter un certains nombre de champs, notamment le nom de l'auteur,
+la date de création ainsi que d'autres éléments supplémentaire.
+
+Vous trouverez ci-dessous un exemple de script de validation de données que
+l'on applique a tout documents issues d'une requête *POST*, soit l'insertion
+d'un nouveau document.
+
+.validate.js
+[source,javascript]
+----------------------------------------------
+function(newDoc, oldDoc, userCtx) {
+  function require(field, message) {
+    message = message || "Document must have a " + field;
+    if (!newDoc[field]) throw({forbidden : message});
+  };
+
+  if (newDoc.type == "post") {
+    require("title");
+    require("created_at");
+    require("body");
+    require("author");
+  }
+  if (newDoc.type == "comment") {
+    require("name");
+    require("created_at");
+    require("comment", "You may not leave an empty comment");
+  }
+}
+----------------------------------------------
+
+==== Utilisation d'un "Template"
+
+En effet, la vue que l'on expose sur la partie précédente retourne le json brute,
+sans aucun traitement. Hors, il est fréquent que ces requêtes soient lancer depuis
+une application web. +
+De ce fait, CouchDB propose un mécanisme de template qu'il
+chargera lors de la requête d'une *vue* précise, que se soit pour ajouter,
+consulter ou modifier des données.
+
+.template.js
+[source,javascript]
+----------------------------------------------
+function(doc, req) {
+  !json templates.edit
+  !json blog
+  !code vendor/couchapp/path.js
+  !code vendor/couchapp/template.js
+
+  // we only show html
+  return template(templates.edit, {
+    doc : doc,
+    docid : toJSON((doc && doc._id) || null),
+    blog : blog,
+    assets : assetPath(),
+    index : listPath('index','recent-posts',{descending:true,limit:8})
+  });
+}
+----------------------------------------------
+
+Nous n'expliquerons pas dans les détails l'ensemble des attributs, car ceux-ci sont
+définis de manière plus complète dans la documentation de l'outil.
 
 :imagesdir: ./images/
 === Utilisation de l'interface graphique
