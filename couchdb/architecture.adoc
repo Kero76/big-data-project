@@ -1,0 +1,174 @@
+:author: Nicolas GILLE
+:email: nic.gille@gmail.com
+:description: Partie sur la distribution du système de la base de données CouchDB.
+:revdate: 10 janvier 2018
+:revnumber: 0.1
+:revremark: Création du fichier + Titre principale de la partie.
+:lang: fr
+
+:imagesdir: ./images/
+
+== Architecture de CouchDB
+
+=== Présentation du système CouchDB
+
+==== Une base NoSQL
+
+CouchDB est une base faisant partie des bases NoSQL (Not Only SQL) les plus utilisées
+à l'heure actuelle. En effet, on y retrouve les caractèristiques typique d'une base
+NoSQL, comme on pourra le voir dans le schéma ci-dessous présentant le
+**Théorème de Brewer** ou **Théorème du CAP**, que nous ne redéfinirons pas ici.
+
+[#brewer-theoreme]
+.Théorème de Brewer
+image::couchdb_003_brewer.png[align="center"]
+
+CouchDB fait parti des systèmes ayant pour but de répondre d'avantage à la
+*Disponibilité (Availability) et la Tolérance au partitionnement (Partition Tolerance)*
+des données, celui-ci réponds à des problèmatiques basées davantage sur l'accessibilité
+constante aux services ainsi que son partionnement sur un nombre important de
+serveurs répartis en divers point géographique.
+
+[quote, Werner Vogels, Directeur de la technologie et Vice-président d’Amazon]
+____
+Tout nœud d’un système devrait pouvoir prendre des décisions en se basant uniquement
+sur l’état local. Si vous avez besoin de quelque chose, que vous êtes sous pression,
+que des problèmes se produisent, et que vous devez obtenir un accord, vous êtes perdu.
+Si vous vous préoccupez du passage à l’échelle, tout algorithme qui vous force à
+obtenir un accord deviendra inexorablement votre goulot d’étranglement.
+Soyez-en certain.
+____
+
+Si la disponibilité est la priorité, nous pouvons laisser un client écrire sur
+un nœud de la base de données sans attendre l’accord des autres nœuds.
+Si la base de données est capable de réconcilier ces opérations avec les autres nœuds,
+nous obtenons une sorte de « cohérence finale » en échange de la haute disponibilité.
+Étonnamment, c’est un compromis souvent acceptable pour les applications.
+
+À la différence des bases de données relationnelles, où chaque action effectuée
+est nécessairement sujette à des contrôles d’intégrité,
+CouchDB facilite aisi la conception d’applications qui sacrifient la
+cohérence immédiate au profit de bien meilleures performances rendues possibles
+par une distribution simple des données.
+
+==== Anatomie du requêtage du système
+
+Pour bien comprendre le fonctionnement de CouchDB, il est nécessaire de voir son
+fonctionnement sur un point unique, à savoir une seule instance de base de données.
+Vous trouverez ci-dessous un schéma montrant le fonctionnement interne de l'API
+de recherche, d'ajout, de suppression et de modification des données présente
+sous forme de document *Json*.
+
+[#request_body]
+.Anatomie d'une requête CouchDB
+image::couchdb_004_request_body.png[align="center"]
+
+On observe que CouchDB utilise comme moteur de stockage en *B-Tree* aussi appelé
+*Arbre Equilibré*. Un arbre B est une structure ordonnée permettant la recherche,
+l’insertion et la suppression avec un temps de traitement logarithmique.
+
+Couplé a ce moteur de recherche, CouchDB utilise aussi l'algorithme *MapReduce*,
+pour trouver les résultats d’une vue.
+Cette algorithme utilise deux fonctions, à savoir *subdiviser et agréger* qui sont
+appliquées sur chaque document indépendamment des autres.
+Cette application séparée de ces étapes pour chaque document implique ainsi le calcul
+d'une vue peut être parallélisé et puisse être calculé de manière incrémental.
+Plus important encore, ces deux fonctions produisent un couple de clé/valeur,
+ce qui permet à CouchDB de stocker les résultats dans l’arbre B, trié par clé.
+Or, les recherches par clé, ou intervalle de clés, sont d’une rapidité redoutable dans un arbre B.
+Traduit en notation de complexité (O), cela donne respectivement O(log(N)) et O(log(N + K)).
+
+Avec CouchDB, nous accédons aux documents et aux vues par clé ou intervalle de clés.
+C’est une correspondance directe avec les opérations sous-jacentes effectuées
+par le moteur de stockage en arbre B de CouchDB.
+En joignant les insertions et mises à jour de documents, cette correspondance
+directe explique que nous parlions de fine couche d’interface entourant
+le moteur de base de données pour décrire l’API.
+
+Être capable d’accéder aux enregistrements uniquement à l’aide de leur clé est
+une contrainte très importante qui nous permet d’obtenir des gains de performance impressionnants.
+En plus de ces gains colossaux de rapidité, nous pouvons répartir les données sur
+plusieurs nœuds sans perdre la faculté de requêter chaque nœud indépendamment.
+
+==== Accès concurrenciel aux documents
+
+Dans tout système relationnel classique, si un ensemble d'utilisateur souhaite
+accéder aux données de manières simultanées, le SGBDR mets en place un *verrou*,
+qui implique qu'un seul utilisateur peut accéder à la donnée à un *instant t*,
+les autres étant mise en *attente* par le système.
+
+Plutôt que de recourir aux verrous, CouchDB utilise un système de
+*Multi-Version Concurrency Control (MVCC)* pour gérer les accès concurrents à la base.
+Vous trouverez ci dessous une illustration présentant le *MVCC* fasse aux systèmes
+de verrous d'un SGBDR classique.
+
+[#mvcc]
+.Principe du Multi-Version Concurrency Control
+image::couchdb_005_mvcc.png[align="center"]
+
+On remarque sur le schéma que les documents sont tous versionnées au fur et à mesure
+de leurs modifcations, comme on le retrouve dans un système de versionning de fichier,
+tels que *Subversion* ou *Git*.
+Ceci à pour avantage que si un utilisateur lambda utilise la version 1.0 d'un document
+et que dans le même temps un second utilisateur modifie les données de celui-ci.
+L'utilisateur 1 pourra toujours manipuler son document de manière transparante,
+sans avoir eu vent de la modification apporté par l'utilisateur 2 et inversement.
+Ainsi, une requête de lecture renverra toujours à la dernière version du document,
+et si une requête précédente avait requêté sur le document avec une version ultérieure,
+celle-ci reste utilisable sans problème.
+
+=== Distributivité des données
+
+Maintenir la cohérence au sein d’un unique nœud de base de données est relativement
+simple pour la plupart des bases. Les réels problèmes surviennent lorsqu’il
+s’agit de faire la même chose entre plusieurs serveurs.
+Si un client écrit sur le serveur A, comment s’assurer que c’est cohérent
+avec le serveur B, ou C, ou D ? +
+Pour les bases de données relationnelles, c’est un problème complexe avec des
+livres entiers qui traitent du sujet. Vous pourriez utiliser des topologies de
+réplication multimaître, maître-esclave, partitionner, fragmenter,
+disposer des caches d’écriture et toutes sortes de techniques compliquées.
+
+==== Cohérence Distribuée
+
+Puisque les actions que vous effectuez sur le système ce base uniquement sur les
+documents qu'ils contiennent, il n'est plus nécessaire de garder une communication
+constante entres les serveurs pour que les données soient toujours valide.
+
+En effet, CouchDB a mis en place un système de **Réplication Incrémentale**, permettant
+une *cohérence finale* entre les bases de données.
+Ce processus consiste a copier l'ensemble des données entres les diverses bases de
+données mise en place dans le *cluster* de manières périodiques entres elles.
+Nous arrivons ainsi sur un système appelé *shared-nothing cluster*, signifiant
+que les noeuds sont indépendants et autosuffisant.
+Vous trouverez ci-dessous le principe de *réplication incrémentale*, sous forme
+schématique pour mieux saisir le principe.
+
+[#replication]
+.Réplication incrémental des noeuds
+image::couchdb_006_incremental_replication.png[align="center"]
+
+Cette réplication peut être lancer de manière complétement automatique par des
+tâche *cron* présente sur les serveurs, ou bien de manière manuelle par tout
+utilisateur ayant les droits de réplication sur le système.
+
+==== Résolution des conflits
+
+En effet, supposons qu'un document soit modifier dans deux serveurs différents,
+avant que ceux-ci soient n'ai subit la réplication incrémentale, que se passerait-il
+lorsque la réplication sera mis en oeuvre ?
+
+CouchDB est capable de résoudre ce genre de problème de la même façon que via un
+système de versionning classique, c'es à dire en lui applicant un *flag* indiquant
+qu'il y a conflit entre deux versions de ce document.
+
+Dans ce cas la, une version est marquée comme *gagnante* et l'autre comme *perdante*.
+La gagnante devient ainsi la dernière version stable connue du fichier,
+tandis que la perdante est stocké dans le système comme étant une version ultérieur
+à la version *gagnante* du document.
+Ce choix est ainsi répercuté sur l'ensemble des bases composant le système, respectant
+ainsi la cohérence de l'ensemble des données du système.
+
+Il est aussi possible de gérer soit même le conflit, en fonction de la configuration
+que l'on a mis en place dans le système, soit en tentant de fusionner les deux
+documents, soit en revenant à la version antérieur du document.

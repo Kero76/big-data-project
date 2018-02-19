@@ -1,0 +1,35 @@
+:author: Nicolas GILLE
+:email: nic.gille@gmail.com
+:description: Rapport a propos du système CouchDB
+:revdate: 10 janvier 2018
+:revnumber: 0.1
+:revremark: Création de la partie Annexe + Configuration de la machine de test.
+:lang: fr
+:appendix-caption: Annexe
+
+== Annexes
+
+[#computer-configuration]
+[appendix]
+=== Configuration de la machine de test
+
+Voici la configuration _hardware_ de la machine sur lequel sont effectués
+l'ensemble des tests :
+
+* OS : Fedora 27 / 64 Bits
+* Processeur : Intel(R) Core(TM) i7-3610QM CPU @ 2.30GHz (8 Coeurs / 16 Threads).
+* RAM : 6 Go.
+* Carte Graphique : GeForce 630M 2GB dédiés.
+
+[appendix]
+=== Liens utiles
+
+* http://couchdb.apache.org/[CouchDB Apache], dernière consultation le 17 février 2018
+* http://guide.couchdb.org/index.html[Guide CouchDB], dernière consultation le 17 février 2018
+
+[appendix]
+=== Auteurs
+
+* Arthur BREUNEVEL
+* Nicolas GILLE
+* Grégoire POMMIER

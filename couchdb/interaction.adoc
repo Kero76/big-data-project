@@ -1,0 +1,329 @@
+:author: Nicolas GILLE
+:email: nic.gille@gmail.com
+:description: Présentation des méthodes d'interaction avec le système couchDB
+:revdate: 18 Février 2018
+:revnumber: 0.3
+:revremark: Finalisation du contenu du fichier.
+:lang: fr
+
+== Présentation des méthodes d'interaction avec le système
+
+=== Fonctionnement de CouchDb
+
+**couchDb** fonctionne via une architecture REST. L'idée est ici de pouvoir requêter
+le système de base de donnée directement via des requêtes *HTTP*, qui seront
+interprétés par le système afin d'effectuer les actions voulues par l'utilisateur
+est retourner les jeux de données demandées. +
+Pour cela, nous allons définir ensemble, pour les différentes actions possible,
+l'URL qui sera utilisé pour affecté le système de base de données.
+De plus, nous allons définir la méthode de requêtage HTTP à utiliser pour que l'action
+soit prise en compte.
+Définissons rapidement les différentes méthodes de requêtes HTTP :
+* GET : Permet de demander une ressource tels que un document ou une Vue.
+* POST : Permet d'ajouter un document aux sysyèmes.
+* PUT : Permet d'effectuer une modification sur le système tel que la modification
+d'une base de données, d'un document, ...
+* DELETE : Permet la suppression de ressources, de base de données, ...
+
+=== Manipulation des bases de données
+
+==== Création d'une base de données
+
+Afin de créer une base de données, il faut envoyer une requête PUT sur l'url suivante
+`http://127.0.0.1:5894/{databae_name}` avec *database_name* le nom de le base de données
+ que l'on souhaite créer.
+ Par exemple, la commande suivante crée une base de donneés du nom de *big_data*
+ et retourne le code HTTP correspond indiquant la réussite ou l'échec du processus.
+
+[source,shell]
+----------------------------------------------
+# curl -X PUT http://127.0.0.1:5984/big_data
+{"ok":true}
+----------------------------------------------
+
+Le code `{"ok":true}` indique que la base de données a été créée correctement.
+
+==== Listing de toutes les bases de données du système
+
+Maintenant que nous avons créée une base de données, nous souhaitons voir l'ensemble
+des bases de données déjà présente dans le système.
+Pour cela, nous allons requêter en GET l'URL du système avec comme suffixe
+*_all_dbs* qui nous permettra de voir l'ensemble des bases en système.
+
+[source,shell]
+---------------------------------------------
+$ curl -X GET http://127.0.0.1:5984/_all_dbs
+["_replicator","_users","big_data"]
+---------------------------------------------
+
+Nous remarquons qu'il existe déjà 2 base de données (_replicator et _users) ainsi
+que la nouvelle base de données créer précédement.
+
+==== Récupération des informations relatives à une base
+
+*CouchDB* propose de voir les informations relative a une base de données de la
+manière suivante : `$ http://127.0.0.1:5984/{database_name}`. +
+Les données récupérées indique entre autres le nom de la base, son nombre de
+documents, le nombre de documents supprimé, ...
+
+[source,shell]
+-----------------------------------------------
+$ curl -X GET http://127.0.0.1:5984/_replicator
+{
+  "db_name":"_replicator",
+  "doc_count":1,
+  "doc_del_count":0,
+  "update_seq":1,
+  "purge_seq":0,
+  "compact_running":false,
+  "disk_size":4194,
+  "data_size":2006,
+  "instance_start_time":"1518710799423032",
+  "disk_format_version":6,
+  "committed_update_seq":1
+}
+-----------------------------------------------
+
+==== Suppression d'une base de donnée
+
+Pour supprimer une base de données, il suffit de lancer la requête sur la
+base de données que l'on souhaite, via une requête DELETE, en précisant
+le nom de la base de données que l'on souhaite supprimer.
+
+[source,shell]
+-----------------------------------------------
+$ curl -X DELETE http://127.0.0.1:5984/big_data
+{
+   "ok" : true
+}
+-----------------------------------------------
+
+=== Manipulation des documents
+
+==== Ajout d'un document dans la base de données
+
+Pour ajouter des données dans la base de données, il existe ainsi 2 solutions :
+en ligne de commande ou via l'interface grpahique.
+Nous verrons ici uniquement la façon de faire en ligne de commande.
+
+Ainsi, pour ajouter des données, il faut taper sur cette url via la méthode PUT :
+`http://127.0.0.1:5984/{database_name}/{id} -d '{ json_content }'`.
+On retrouve donc le nom de la base de données, l'identifiant du fichier
+devant être unique dans la base de données, puis l'option *-d* accompagné
+du fichier json que l'on souhaite envoyer en base de données.
+
+Il est ainsi possible de définir un script permettant l'insertion d'un nombre
+important de données, cependant, il m'a été impossible de le réaliser sur ma machine,
+celle-ci crashant au bout de quelques minutes d'insertion, sans que je puisse comprendre
+ d'ou vienne le problème. J'ai donc due en ajouter un certain nombre à la main,
+ ce qui m'a pris énormément de temps.
+
+[source,shell]
+-----------------------------------------------
+$ curl -X PUT http://127.0.0.1:5984/big_data/001 -d '{ ... }'
+{
+  "ok":true,
+  "id":"001",
+  "rev":"1-1c2fae390fa5475d9b809301bbf3f25e"
+}
+-----------------------------------------------
+
+==== Mise à jour d'un document de la base
+
+Pour mettre à jour un document, il suffit de requêter l'url suivante
+`http://127.0.0.1:5984/{database_name}/{id} -d '{ json_content }` via la méthode PUT
+en modifiant le contenu du document initial avec ces nouvelles valeurs.
+Pour identifier le document, on utilise l'*id* que l'on a utilisé pour son insertion,
+auquel on adjoint le nouveau contenu que l'on souhaite y intégrer. +
+Cela aura pour effet de modifier le champs *_rev* qui indique le nombre de modification
+que l'on a apporté aux documents, permettant ainsi de facilité le mécanisme de
+réplication des données.
+
+==== Suppression d'un document de la base
+
+Le mécanisme de suppression fonctionne de manière identique à la modification des données,
+sauf que cette fois-ci, l'on requête l'url via la méthode DELETE et non plus PUT,
+comme l'on faisait précédement pour la modification.
+De plus, nous n'ajoutons plus l'option *-d* ainsi que le contenu du fichier, car ici,
+nous supprimons uniquement le document de la base de données.
+Voici donc un exemple de requête de suppression du document ajouter précédement.
+
+[source,shell]
+-----------------------------------------------
+$ curl -X PUT http://127.0.0.1:5984/big_data/001
+{
+  "ok":true,
+  "id":"001",
+  "rev":"2-1c2fae390fa5475d9b809301bbf3f25e"
+}
+-----------------------------------------------
+
+=== Requête d'un ensemble de documents
+
+Nous nous baserons sur des documents stockant le prix d’articles
+de supermarché comme on en trouve dans divers magasins
+
+Voici les différents fichiers json qui seront utilisés pour la suite
+de la présentation du fonctionnement de CouchDB.
+
+.apple_file.json
+[source,javascript]
+----------------------------------------------
+{
+    "_id" : "bc2a41170621c326ec68382f846d5764",
+    "_rev" : "2612672603",
+    "item" : "apple",
+    "prices" : {
+        "Fresh Mart" : 1.59,
+        "Price Max" : 5.99,
+        "Apples Express" : 0.79
+    }
+}
+----------------------------------------------
+
+.citrus_file.json
+[source,javascript]
+----------------------------------------------
+{
+    "_id" : "bc2a41170621c326ec68382f846d5764",
+    "_rev" : "2612672603",
+    "item" : "orange",
+    "prices" : {
+        "Fresh Mart" : 1.99,
+        "Price Max" : 3.19,
+        "Citrus Circus" : 1.09
+    }
+}
+----------------------------------------------
+
+.banana_file.json
+[source,javascript]
+----------------------------------------------
+{
+    "_id" : "bc2a41170621c326ec68382f846d5764",
+    "_rev" : "2612672603",
+    "item" : "banana",
+    "prices" : {
+        "Fresh Mart" : 1.99,
+        "Price Max" : 0.79,
+        "Banana Montana" : 4.22
+    }
+}
+----------------------------------------------
+
+==== Utilisation de la fonction de MapReduce
+
+Voici un exemple de la fonction Map que l'on peut utiliser afin subdiviser
+les résultats des documents afin de les regrouper plus tard dans la fonction
+*Reduce*.
+
+.map.js
+[source,javascript]
+----------------------------------------------
+function(doc) {
+    var store, price, value;
+    if (doc.item && doc.prices) {
+        for (store in doc.prices) {
+            price = doc.prices[store];
+            value = [doc.item, store];
+            emit(price, value);
+        }
+    }
+}
+----------------------------------------------
+
+Ce script permet d'afficher la *Vue* finale de nos documents après requête.
+
+.view.js
+[source,javascript]
+----------------------------------------------
+function(doc) {
+    var store, price, key;
+    if (doc.item && doc.prices) {
+        for (store in doc.prices) {
+            price = doc.prices[store];
+            key = [doc.item, price];
+            emit(key, store);
+        }
+    }
+}
+----------------------------------------------
+
+==== Validation des documents
+
+Il est possible d'écrire des fonctions de validations des documents reçus
+afin d'avoir un contrôle absolu sur les données que l'on souhaite stocker. +
+En effet, il peut être intéressant de ne stockers des données que sous un certain
+format, ou d'ajouter un certains nombre de champs, notamment le nom de l'auteur,
+la date de création ainsi que d'autres éléments supplémentaire.
+
+Vous trouverez ci-dessous un exemple de script de validation de données que
+l'on applique a tout documents issues d'une requête *POST*, soit l'insertion
+d'un nouveau document.
+
+.validate.js
+[source,javascript]
+----------------------------------------------
+function(newDoc, oldDoc, userCtx) {
+  function require(field, message) {
+    message = message || "Document must have a " + field;
+    if (!newDoc[field]) throw({forbidden : message});
+  };
+
+  if (newDoc.type == "post") {
+    require("title");
+    require("created_at");
+    require("body");
+    require("author");
+  }
+  if (newDoc.type == "comment") {
+    require("name");
+    require("created_at");
+    require("comment", "You may not leave an empty comment");
+  }
+}
+----------------------------------------------
+
+==== Utilisation d'un "Template"
+
+En effet, la vue que l'on expose sur la partie précédente retourne le json brute,
+sans aucun traitement. Hors, il est fréquent que ces requêtes soient lancer depuis
+une application web. +
+De ce fait, CouchDB propose un mécanisme de template qu'il
+chargera lors de la requête d'une *vue* précise, que se soit pour ajouter,
+consulter ou modifier des données.
+
+.template.js
+[source,javascript]
+----------------------------------------------
+function(doc, req) {
+  !json templates.edit
+  !json blog
+  !code vendor/couchapp/path.js
+  !code vendor/couchapp/template.js
+
+  // we only show html
+  return template(templates.edit, {
+    doc : doc,
+    docid : toJSON((doc && doc._id) || null),
+    blog : blog,
+    assets : assetPath(),
+    index : listPath('index','recent-posts',{descending:true,limit:8})
+  });
+}
+----------------------------------------------
+
+Nous n'expliquerons pas dans les détails l'ensemble des attributs, car ceux-ci sont
+définis de manière plus complète dans la documentation de l'outil.
+
+:imagesdir: ./images/
+=== Utilisation de l'interface graphique
+
+**CouchDB** possède en interne un service web graphique permettant d'intéragir
+avec le système directement depuis un navigateur web quelconque.
+Pour cela, il vous suffit de taper `http://127.0.0.1:5984/_utils/` dans votre
+navigateur favori afin d'accéder à la partie graphique de *CoucheDB*.
+
+[#ui-couchdb]
+.Interface graphique de CouchDB
+image::couchdb_001.png[align="center"]

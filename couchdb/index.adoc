@@ -1,0 +1,30 @@
+:author: Arthur BREUNEVAL, Nicolas GILLE et Grégoire POMMIER
+:email: nic.gille@gmail.com
+:description: Rapport a propos du système CouchDB
+:revdate: 17 février 2018
+:revnumber: 1.0
+:revremark: Ajout de l'introduction.
+:lang: fr
+
+// Table of Content settings.
+:toc: auto
+:toc-title: Table des Matières
+
+= Rapport à propos du système NoSQL : CouchDB
+
+// Include all parts of report.
+toc::[]
+
+include::introduction.adoc[]
+
+<<<
+include::installation.adoc[]
+
+<<<
+include::architecture.adoc[]
+
+<<<
+include::interaction.adoc[]
+
+<<<
+include::annexes.adoc[]
