@@ -21,7 +21,7 @@ NoSQL, comme on pourra le voir dans le schéma ci-dessous présentant le
 
 [#brewer-theoreme]
 .Théorème de Brewer
-image::couchdb_003_brewer.png[width="450", height="450", align="center"]
+image::couchdb_003_brewer.png[align="center"]
 
 CouchDB fait parti des systèmes ayant pour but de répondre d'avantage à la
 *Disponibilité (Availability) et la Tolérance au partitionnement (Partition Tolerance)*
@@ -61,7 +61,7 @@ sous forme de document *Json*.
 
 [#request_body]
 .Anatomie d'une requête CouchDB
-image::couchdb_004_request_body.png[width="450", height="450", align="center"]
+image::couchdb_004_request_body.png[align="center"]
 
 On observe que CouchDB utilise comme moteur de stockage en *B-Tree* aussi appelé
 *Arbre Equilibré*. Un arbre B est une structure ordonnée permettant la recherche,
@@ -104,7 +104,7 @@ de verrous d'un SGBDR classique.
 
 [#mvcc]
 .Principe du Multi-Version Concurrency Control
-image::couchdb_005_mvcc.png[width="450", height="450", align="center"]
+image::couchdb_005_mvcc.png[align="center"]
 
 On remarque sur le schéma que les documents sont tous versionnées au fur et à mesure
 de leurs modifcations, comme on le retrouve dans un système de versionning de fichier,
@@ -146,7 +146,7 @@ schématique pour mieux saisir le principe.
 
 [#replication]
 .Réplication incrémental des noeuds
-image::couchdb_006_incremental_replication.png[width="450", height="450", align="center"]
+image::couchdb_006_incremental_replication.png[align="center"]
 
 Cette réplication peut être lancer de manière complétement automatique par des
 tâche *cron* présente sur les serveurs, ou bien de manière manuelle par tout

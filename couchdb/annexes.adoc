@@ -7,7 +7,6 @@
 :lang: fr
 :appendix-caption: Annexe
 
-
 == Annexes
 
 [#computer-configuration]

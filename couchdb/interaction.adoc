@@ -326,4 +326,4 @@ navigateur favori afin d'accéder à la partie graphique de *CoucheDB*.
 
 [#ui-couchdb]
 .Interface graphique de CouchDB
-image::couchdb_001.png[width="450", height="450", align="center"]
+image::couchdb_001.png[align="center"]
