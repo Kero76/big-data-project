@@ -1,5 +1,7 @@
 # MongoDB - rapport d'installation et de test pour le projet de NoSQL
 
+Arthur BREUNEVAL, Grégoire POMMIER, Nicolas GILLE
+
 ## Paquet téléchargé
 [mongodb-win32-x86_64-2008plus-ssl-3.6.1-signed.msi](https://www.mongodb.com/dr/fastdl.mongodb.org/win32/mongodb-win32-x86_64-2008plus-ssl-3.6.1-signed.msi/download)
 
@@ -127,3 +129,35 @@ prend tous les restaurants dont le quartier est Manhattan, les groupe par identi
 # Avec les corpus de textes de PubMed
 
 Maintenant que nous avons vu quelques exemples de requêtages de MongoDB, langage assez intuitif par ailleurs, nous allons effectuer quelques tests de performances et de comportements sur des grosses données. Pour cela, nous utiliserons une grande quantité de données récupérées depuis PubMed, la base de nonnées mondiale des articles scientifiques autour du domaine médical.
+
+
+## Insertion de 880033 articles de pubmed au format JSON.
+
+Le dossier courant contient tous les fichiers JSON. On exécute :
+```
+for f in *;do
+  mongoimport --db test --collection pubmed --file $f
+done
+```
+Car en effet, mongoimport ne permet malheureusement pas d'importer une liste de fichiers, seulement des fichiers un par un...
+Les données représentent au total 7.601 Go.
+Nous n'avons réussit qu'à insérer à peu près 85% des données. En effet, après 51h d'insertion, la fenêtre du terminal a mystérieusement disparu. Étant donné le temps démentiel que cela a pris, nous n'avons pas souhaité réitérer l'opération. Mais au moins, nous nous sommes rendu compte que les PC classiques ne sont pas **du tout** adaptés à ce genre d'opération.
+Pour la même raison, nous sommes un peu frileux quant à exécuter d'autres requêtes (type recherche / aggrégation) sur les données insérées. C'est pourquoi nous nous sommes plutôt penchés sur le système de réplication afin d'essayer de comprendre plus profondément le fonctionnement de MongoDB, au lieu d'exécuter des requêtes interminables.
+
+
+# Réplication
+
+Un ensemble de réplication est un ensemble de noeuds maintenant une version du même ensemble de données.
+
+Dans MongoDB, le système de réplication s'apparente au système de load-balancing. En effet, un noeud, dit noeud primaire, reçoit les requêtes clientes. Ce noeud distribue les opérations sur les noeuds dits secondaires pour distribuer la charge de travail. Si plusieurs opérations concurrentes ont lieu, il y a un système d'arbitre. Cet arbitre est toujours le même est il élit un quorum afin de décider quelle version de la donnée est la bonne. Dans le cas où la requête cliente a un writeConcernavec un w à "majority", chaque membre du quorum vote pour la version de la donnée dont il dispose, et la majorité remporte le vote pour définir la nouvelle version de la donnée. Si w va-t 1, c'est le vote du noeud primaire qui prime, la décision du chef...
+
+Un arbitre n'a pas besoin d'un matériel spécifique, puisqu'il ne fait qu'appliquer un algorithme tous les X temps pour déterminer un nouveau quorum. Ainsi, il est très facile d'ajouter un arbitre au système de réplication.
+
+En revanche, un noeud primaire peut perdre son pouvoir et passer à un noeud secondaire, et vice-versa. Ainsi, si un noeud primaire est surchargé, un noeud secondaire peut être élu pour encaisser la charge, alors qu'il était noeud secondaire à la base, puis retourner à son rôle de noeud secondaire ensuite.
+
+Pour ce qui est des opérations asynchrones, les noeuds primaires distribuent simplement les opérations aux noeuds secondaires.
+
+Lorsque le noeud primaire ne répond plus, un noeud secondaire déclenche automatiquement l'élection d'un nouveau noeud primaire. La détection du fait que le noeud primaire ne répond plus peut aller de 10 à 30 semondes, et l'élection elle-même peut également prendre de 10 à 30 secondes.
+Depuis la version 3.2 de MongoDB, ce temps est réduit.
+
+Par défaut, les opérations de lecture s'exécutent sur le noeud primaire, mais les clients peuvent spécifier un noeud secondaire. Cependant, il y a un risque que les données lues ne reflètent pas les données du noeud primaire.
